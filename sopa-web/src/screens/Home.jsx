@@ -38,8 +38,7 @@ export default function Home() {
         const socket = handleConnect();
         if (!socket) return;
 
-        socket.emit('joinRoom', { pin: pinToJoin.toUpperCase(), nickname });
-
+        // PRIMERO: Preparamos las orejas para escuchar la respuesta
         socket.once('errorMsg', (msg) => {
             alert(msg);
             socketService.disconnect();
@@ -49,6 +48,9 @@ export default function Home() {
             console.log("¡El invitado recibió gameStarted!", gameData);
             navigate('/game', { state: { gameData, pin: pinToJoin.toUpperCase(), nickname } });
         });
+
+        // SEGUNDO: Emitimos el evento de unirnos a la sala
+        socket.emit('joinRoom', { pin: pinToJoin.toUpperCase(), nickname });
     };
 
     return (

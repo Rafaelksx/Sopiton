@@ -8,7 +8,6 @@ export default function Lobby() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Si no hay datos de estado (alguien entró directo a la URL), devolver a inicio
         if (!state || !state.pin) {
             navigate('/');
             return;
@@ -20,38 +19,29 @@ export default function Lobby() {
             return;
         }
 
-        // Cuando el servidor avisa que el juego empezó (se unió el jugador 2)
-        socket.on('gameStarted', (gameData) => {
-            // Pasamos todos los datos a la pantalla de Juego
+        // 1. Creamos la función que manejará el evento
+        const handleGameStart = (gameData) => {
             console.log("¡El anfitrión recibió gameStarted!", gameData);
             navigate('/game', { 
-                state: { 
-                    gameData, 
-                    pin: state.pin, 
-                    nickname: state.nickname 
-                } 
+                state: { gameData, pin: state.pin, nickname: state.nickname } 
             });
-        });
+        };
 
-        // Por si el servidor se cae o el jugador se desconecta
-        socket.on('disconnect', () => {
+        const handleDisconnect = () => {
             alert('Desconectado del servidor.');
             navigate('/');
-        });
+        };
 
+        // 2. Escuchamos el evento
+        socket.on('gameStarted', handleGameStart);
+        socket.on('disconnect', handleDisconnect);
+
+        // 3. Limpiamos SOLO estas funciones específicas cuando el componente se desmonte
         return () => {
-            socket.off('gameStarted');
-            socket.off('disconnect');
+            socket.off('gameStarted', handleGameStart);
+            socket.off('disconnect', handleDisconnect);
         };
     }, [navigate, state]);
-
-    if (!state) return null;
-
-    const handleCancel = () => {
-        const socket = socketService.getSocket();
-        if (socket) socket.disconnect();
-        navigate('/');
-    };
 
     return (
         <div className="lobby-container">
