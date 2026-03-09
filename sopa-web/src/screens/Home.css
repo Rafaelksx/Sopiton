@@ -1,0 +1,61 @@
+/* src/screens/Home.css */
+.container { 
+    display: flex; justify-content: center; align-items: center; 
+    min-height: 100vh; 
+    background-color: #0f172a; /* Azul muy oscuro */
+    color: #f8fafc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+.card { 
+    background-color: #1e293b; /* Panel oscuro */
+    padding: 30px; 
+    border-radius: 8px; /* Esquinas más cuadradas */
+    border: 1px solid #334155;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+    width: 100%; max-width: 420px; 
+}
+
+.title { 
+    font-size: 32px; font-weight: 800; text-align: center; 
+    color: #38bdf8; /* Texto Azul claro vibrante */
+    margin: 0 0 5px 0; letter-spacing: 1px;
+}
+
+.subtitle { 
+    font-size: 14px; text-align: center; color: #94a3b8; 
+    margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;
+}
+
+.input-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+.input-group label { font-size: 13px; color: #cbd5e1; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+.input-group input { 
+    background-color: #0f172a; border: 1px solid #475569; 
+    border-radius: 4px; padding: 12px; font-size: 16px; color: white;
+}
+.input-group input:focus { outline: none; border-color: #38bdf8; }
+
+.checkbox-group { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+.checkbox-group label { font-size: 14px; color: #cbd5e1; cursor: pointer; }
+
+.btn-create { 
+    width: 100%; background-color: #8b5cf6; /* Morado vibrante */
+    color: white; padding: 15px; border-radius: 4px; border: none; 
+    font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s;
+}
+.btn-create:hover { background-color: #7c3aed; transform: translateY(-2px); }
+
+.separator { display: flex; align-items: center; margin: 25px 0; color: #64748b; font-size: 12px; }
+.separator hr { flex: 1; border: none; border-top: 1px solid #334155; }
+.separator span { padding: 0 15px; }
+
+.row { display: flex; justify-content: space-between; gap: 12px; }
+.input-half { 
+    flex: 0.5; text-align: center; font-weight: bold; font-size: 18px; letter-spacing: 2px;
+    background-color: #0f172a; border: 1px solid #475569; border-radius: 4px; padding: 12px; color: white; text-transform: uppercase; 
+}
+.btn-join { 
+    flex: 0.5; background-color: #10b981; /* Verde esmeralda */
+    color: white; border: none; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;
+}
+.btn-join:hover { background-color: #059669; }

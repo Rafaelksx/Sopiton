@@ -1,0 +1,81 @@
+/* src/screens/Game.css */
+.game-container {
+    min-height: 100vh;
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.game-layout {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    gap: 30px;
+}
+
+/* Tablero */
+.board-section { flex: 2; }
+.board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.board-header h2 { margin: 0; color: #94a3b8; font-size: 20px; font-weight: normal; }
+.board-header span { color: #f8fafc; font-weight: bold; font-family: monospace; letter-spacing: 2px;}
+
+.timer { font-size: 32px; font-weight: 800; font-family: monospace; color: #38bdf8; }
+.timer.danger { color: #ef4444; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.turn-indicator { background: #1e293b; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #334155; }
+.turn-indicator h3 { margin: 0 0 5px 0; font-size: 18px; }
+.turn-indicator p { margin: 0; font-size: 13px; color: #94a3b8; }
+.my-turn { color: #10b981; }
+.their-turn { color: #f59e0b; }
+
+/* CSS Grid para la sopa de letras */
+.grid-board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    background-color: #1e293b;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.grid-cell {
+    aspect-ratio: 1 / 1;
+    display: flex; justify-content: center; align-items: center;
+    background-color: #0f172a; border: 1px solid #334155;
+    font-size: 22px; font-weight: bold; color: #cbd5e1;
+    border-radius: 4px; user-select: none; transition: 0.2s;
+}
+
+.grid-cell.clickable { cursor: pointer; }
+.grid-cell.clickable:hover:not(.filled) { background-color: #334155; }
+.grid-cell.filled { color: white; border-color: transparent; }
+
+/* Barra lateral */
+.sidebar-section { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+.players-card, .words-card { background-color: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
+
+.player-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin-bottom: 8px; background-color: #0f172a; border-radius: 4px; border: 1px solid transparent; }
+.active-player { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+.player-name { font-weight: bold; font-size: 16px; }
+.you-badge { background: #8b5cf6; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; text-transform: uppercase; font-weight: bold; }
+.player-score { font-size: 18px; font-weight: 900; color: #38bdf8; }
+
+.words-card h3 { margin: 0 0 15px 0; font-size: 16px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;}
+.words-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.word-pill { background: #0f172a; border: 1px solid #475569; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #cbd5e1; transition: 0.3s; }
+.word-pill.found { background: #064e3b; border-color: #059669; color: #a7f3d0; text-decoration: line-through; opacity: 0.7; }
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    .game-layout { flex-direction: column; }
+    .grid-cell { font-size: 18px; }
+}
