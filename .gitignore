@@ -1,0 +1,14 @@
+# Ignore Python caches
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environments
+venv/
+.env
+
+# Node modules for frontend
+sopa-web/node_modules/
+
+# Logs and OS files
+*.log
+.DS_Store
