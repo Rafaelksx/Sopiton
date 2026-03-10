@@ -43,6 +43,12 @@ export default function Lobby() {
         };
     }, [navigate, state]);
 
+    const handleCancel = () => {
+        const socket = socketService.getSocket();
+        if (socket) socket.disconnect();
+        navigate('/');
+    };
+
     return (
         <div className="lobby-container">
             <div className="lobby-card">

@@ -134,7 +134,7 @@ async def joinRoom(sid, data):
         print(f"{nickname} se unió a la sala {pin}")
     else:
         await sio.emit('errorMsg', 'Sala no encontrada o llena.', room=sid)
-        
+
 async def turn_timer(pin):
     """Maneja el tiempo de cada turno de forma asíncrona"""
     room = rooms.get(pin)
@@ -154,6 +154,84 @@ async def change_turn(pin):
     room['timeLeft'] = 30 # Reiniciar tiempo
     await sio.emit('turnChanged', {"turnIndex": room['turnIndex']}, room=pin)
 
+@sio.event
+async def submitWord(sid, data):
+    pin = data.get('pin')
+    startCoords = data.get('startCoords')
+    endCoords = data.get('endCoords')
+    selectedWord = data.get('selectedWord', '')
+
+    room = rooms.get(pin)
+    if not room or room['status'] != 'playing':
+        return
+
+    # Verificar si es el turno del jugador que envió la palabra
+    currentPlayer = room['players'][room['turnIndex']]
+    if sid != currentPlayer['id']:
+        return
+
+    # Validar si la palabra está al derecho o al revés
+    reversedWord = selectedWord[::-1]
+    validWord = None
+
+    if selectedWord in room['wordsToFind']:
+        validWord = selectedWord
+    elif reversedWord in room['wordsToFind']:
+        validWord = reversedWord
+
+    # Verificar que no se haya encontrado ya
+    notFoundYet = validWord and not any(fw['word'] == validWord for fw in room['foundWords'])
+
+    if validWord and notFoundYet:
+        # ¡Acertó!
+        room['foundWords'].append({"word": validWord, "byPlayerId": sid})
+        currentPlayer['score'] += 1
+
+        await sio.emit('wordFound', {
+            "word": validWord,
+            "startCoords": startCoords,
+            "endCoords": endCoords,
+            "players": room['players'],
+            "foundWords": room['foundWords']
+        }, room=pin)
+
+        # Chequear si ganaron el juego
+        if len(room['foundWords']) == len(room['wordsToFind']):
+            await endGame(pin)
+            return
+
+    # Cambiar de turno (tanto si acertó como si se equivocó)
+    await change_turn(pin)
+
+async def endGame(pin):
+    room = rooms.get(pin)
+    if not room: return
+
+    # Detener el temporizador
+    if room.get('task'):
+        room['task'].cancel()
+        
+    room['status'] = 'finished'
+
+    # Determinar ganador
+    p1 = room['players'][0]
+    p2 = room['players'][1]
+    winner = None
+
+    if p1['score'] > p2['score']: winner = p1
+    elif p2['score'] > p1['score']: winner = p2
+    # Si empatan, winner se queda en None
+
+    await sio.emit('gameOver', {
+        "winner": winner,
+        "players": room['players']
+    }, room=pin)
+
+    # Limpiar sala después de 10 segundos
+    await asyncio.sleep(10)
+    if pin in rooms:
+        del rooms[pin]
+        
 @sio.event
 async def disconnect(sid):
     print(f"Usuario desconectado: {sid}")
