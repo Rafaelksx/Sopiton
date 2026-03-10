@@ -44,6 +44,16 @@
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    
+    /* Agregamos esta línea para que el desenfoque sea animado y suave */
+    transition: filter 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+/* LA NUEVA CLASE PARA EL EFECTO DIFUMINADO */
+.blurred-board {
+    filter: blur(5px); /* Desenfoque mágico */
+    opacity: 0.6; /* Lo hacemos un poco más oscuro */
+    pointer-events: none; /* Evita que el ratón interactúe por error */
 }
 
 .grid-cell {

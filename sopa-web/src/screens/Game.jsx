@@ -151,7 +151,7 @@ export default function Game() {
                         <p>Haz clic en la 1ª letra y luego en la última para formar la palabra.</p>
                     </div>
 
-                    <div className="grid-board">
+                  <div className={`grid-board ${!isMyTurn ? 'blurred-board' : ''}`}>
                         {board.map((row, r) => (
                             row.map((cell, c) => {
                                 const bgColor = getCellColor(r, c);
