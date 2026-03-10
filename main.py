@@ -85,13 +85,14 @@ async def createRoom(sid, data):
     nickname = data.get('nickname', 'Host')
     pin = generate_pin()
     
+    easy_mode = data.get('easy_mode', False)
     game_data = generate_board(easy_mode=easy_mode)
     
     rooms[pin] = {
         "pin": pin,
         "board": game_data["board"],
         "wordsToFind": game_data["wordsToFind"],
-        "easy_mode": data.get('easy_mode', False), # Recibe la preferencia de dificultad
+        "easy_mode": easy_mode, # Recibe la preferencia de dificultad
         "foundWords": [],
         "players": [
             {"id": sid, "name": nickname, "score": 0, "role": "host"}
@@ -257,7 +258,7 @@ async def playAgain(sid, data):
         }, room=pin)
 
         room['task'] = asyncio.create_task(turn_timer(pin))
-        
+
 @sio.event
 async def disconnect(sid):
     print(f"Usuario desconectado: {sid}")
