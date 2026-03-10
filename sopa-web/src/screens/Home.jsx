@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socketService from '../socket';
-import './Home.css'; // Crearemos estilos simples para que se vea como el original
+import './css/Home.css'; // Crearemos estilos simples para que se vea como el original
 
 export default function Home() {
     const navigate = useNavigate();

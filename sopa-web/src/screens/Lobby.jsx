@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import socketService from '../socket';
-import './Lobby.css';
+import './css/Lobby.css';
 
 export default function Lobby() {
     const { state } = useLocation();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import socketService from '../socket';
-import './Game.css';
+import './css/Game.css';
 
 export default function Game() {
     const { state } = useLocation();
