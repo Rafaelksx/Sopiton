@@ -24,6 +24,8 @@ export default function Game() {
     const [foundLines, setFoundLines] = useState([]);
     
     const [gameOverData, setGameOverData] = useState(null); // Estado para el modal
+    const [playAgainVotes, setPlayAgainVotes] = useState(0);
+    const [hasVoted, setHasVoted] = useState(false);
 
     const me = players.find(p => p.name === nickname);
     const isMyTurn = players[turnIndex]?.name === nickname;
@@ -51,7 +53,13 @@ export default function Game() {
 
         socket.on('gameOver', ({ winner, players }) => {
             setPlayers(players);
-            setGameOverData({ winner }); // Muestra el modal en lugar de la alerta
+            setGameOverData({ winner });
+            setPlayAgainVotes(0); // Reinicia contador visual
+            setHasVoted(false);   // Reinicia tu botón
+        });
+
+        socket.on('playAgainUpdate', ({ votes }) => {
+            setPlayAgainVotes(votes);
         });
 
         socket.on('gameRestarted', (newGameData) => {
@@ -63,7 +71,10 @@ export default function Game() {
             setFoundLines([]);
             setSelection({ start: null, end: null });
             setTimeLeft(30);
-            setGameOverData(null); // Oculta el modal y reinicia
+            setGameOverData(null); 
+            // Reiniciar estados del modal
+            setPlayAgainVotes(0);
+            setHasVoted(false);
         });
 
         socket.on('playerDisconnected', (msg) => {
@@ -151,7 +162,7 @@ export default function Game() {
                         <p>Haz clic en la 1ª letra y luego en la última para formar la palabra.</p>
                     </div>
 
-                  <div className={`grid-board ${!isMyTurn ? 'blurred-board' : ''}`}>
+                  <div className={`grid-board ${(!isMyTurn && !gameOverData) ? 'blurred-board' : ''}`}>
                         {board.map((row, r) => (
                             row.map((cell, c) => {
                                 const bgColor = getCellColor(r, c);
@@ -209,11 +220,27 @@ export default function Game() {
                                 ? (gameOverData.winner.id === me?.id ? "🏆 ¡Ganaste la partida!" : "💥 ¡Has perdido!") 
                                 : "🤝 ¡Es un empate!"}
                         </p>
+                        
+                        {/* NUEVO: Marcador final */}
+                        <div className="modal-scoreboard">
+                            <h3>Puntuación Final</h3>
+                            {players.map(p => (
+                                <div key={p.id} className={`modal-score-row ${p.id === me?.id ? 'me' : ''}`}>
+                                    <span>{p.name} {p.id === me?.id && "(Tú)"}</span>
+                                    <span className="modal-points">{p.score} pts</span>
+                                </div>
+                            ))}
+                        </div>
+
                         <div className="modal-buttons">
                             <button 
-                                className="btn-play-again" 
-                                onClick={() => socketService.getSocket().emit('playAgain', { pin })}>
-                                Jugar de Nuevo
+                                className={`btn-play-again ${hasVoted ? 'voted' : ''}`} 
+                                disabled={hasVoted}
+                                onClick={() => {
+                                    setHasVoted(true);
+                                    socketService.getSocket().emit('playAgain', { pin });
+                                }}>
+                                {hasVoted ? `Esperando... (${playAgainVotes}/2)` : (playAgainVotes > 0 ? `Jugar de Nuevo (${playAgainVotes}/2)` : "Jugar de Nuevo")}
                             </button>
                             <button 
                                 className="btn-leave" 

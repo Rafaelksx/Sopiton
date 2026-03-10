@@ -182,6 +182,7 @@ async def endGame(pin):
 
     if room.get('task'): room['task'].cancel()
     room['status'] = 'finished'
+    room['playAgainVotes'] = []
 
     p1 = room['players'][0]
     p2 = room['players'][1]
@@ -198,23 +199,33 @@ async def playAgain(sid, data):
     room = rooms.get(pin)
     
     if room and room['status'] == 'finished':
-        game_data = generate_board(easy_mode=room.get('easy_mode', False))
-        
-        room['board'] = game_data['board']
-        room['wordsToFind'] = game_data['wordsToFind']
-        room['foundWords'] = []
-        room['turnIndex'] = 0
-        room['timeLeft'] = 30
-        room['status'] = 'playing'
-        
-        for p in room['players']: p['score'] = 0
+        # Evitar que el mismo jugador vote dos veces
+        if sid not in room['playAgainVotes']:
+            room['playAgainVotes'].append(sid)
             
-        await sio.emit('gameRestarted', {
-            "players": room['players'], "board": room['board'],
-            "wordsToFind": room['wordsToFind'], "turnIndex": room['turnIndex']
-        }, room=pin)
+        # Avisar a ambos cuántos votos van
+        await sio.emit('playAgainUpdate', {"votes": len(room['playAgainVotes'])}, room=pin)
         
-        room['task'] = asyncio.create_task(turn_timer(pin))
+        # Si ambos votaron, reiniciar el juego
+        if len(room['playAgainVotes']) == 2:
+            game_data = generate_board(easy_mode=room.get('easy_mode', False))
+            
+            room['board'] = game_data['board']
+            room['wordsToFind'] = game_data['wordsToFind']
+            room['foundWords'] = []
+            room['turnIndex'] = 0
+            room['timeLeft'] = 30
+            room['status'] = 'playing'
+            room['playAgainVotes'] = [] # Limpiar votos
+            
+            for p in room['players']: p['score'] = 0
+                
+            await sio.emit('gameRestarted', {
+                "players": room['players'], "board": room['board'],
+                "wordsToFind": room['wordsToFind'], "turnIndex": room['turnIndex']
+            }, room=pin)
+            
+            room['task'] = asyncio.create_task(turn_timer(pin))
 
 @sio.event
 async def disconnect(sid):
