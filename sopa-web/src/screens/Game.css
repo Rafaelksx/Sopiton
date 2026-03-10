@@ -79,3 +79,23 @@
     .game-layout { flex-direction: column; }
     .grid-cell { font-size: 18px; }
 }
+/* --- ESTILOS DEL MODAL --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.9); /* Fondo oscuro semitransparente */
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: #1e293b; padding: 40px; border-radius: 12px;
+    text-align: center; border: 2px solid #38bdf8;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    width: 90%; max-width: 400px;
+}
+.modal-content h2 { color: #f8fafc; margin-top: 0; font-size: 28px; }
+.modal-message { color: #cbd5e1; font-size: 20px; margin: 20px 0 30px 0; font-weight: bold;}
+.modal-buttons { display: flex; gap: 15px; justify-content: center; }
+.btn-play-again { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;}
+.btn-play-again:hover { background: #059669; }
+.btn-leave { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;}
+.btn-leave:hover { background: #dc2626; }

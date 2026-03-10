@@ -18,7 +18,7 @@ export default function Game() {
     const [wordsToFind, setWordsToFind] = useState(gameData.wordsToFind);
     const [players, setPlayers] = useState(gameData.players);
     const [turnIndex, setTurnIndex] = useState(gameData.turnIndex);
-
+    const [gameOverData, setGameOverData] = useState(null); // Nuevo estado
     const [timeLeft, setTimeLeft] = useState(30);
     const [selection, setSelection] = useState({ start: null, end: null });
     const [foundWords, setFoundWords] = useState(gameData.foundWords || []);
@@ -51,9 +51,20 @@ export default function Game() {
 
         socket.on('gameOver', ({ winner, players }) => {
             setPlayers(players);
-            let msg = winner ? (winner.id === me?.id ? "¡Ganaste la partida!" : "¡Has perdido!") : "¡Es un empate!";
-            alert(`Fin del Juego: ${msg}`);
-            navigate('/');
+            setGameOverData({ winner });
+        });
+
+        // Escuchar cuando el otro jugador pulsa "Jugar de nuevo"
+        socket.on('gameRestarted', (newGameData) => {
+            setBoard(newGameData.board);
+            setWordsToFind(newGameData.wordsToFind);
+            setPlayers(newGameData.players);
+            setTurnIndex(newGameData.turnIndex);
+            setFoundWords([]);
+            setFoundLines([]);
+            setSelection({ start: null, end: null });
+            setTimeLeft(30);
+            setGameOverData(null); // Cierra el modal
         });
 
         socket.on('playerDisconnected', (msg) => {
@@ -198,6 +209,34 @@ export default function Game() {
                     </div>
                 </div>
             </div>
+            {/* MODAL DE FIN DE JUEGO */}
+            {gameOverData && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>¡Juego Terminado!</h2>
+                        <p className="modal-message">
+                            {gameOverData.winner 
+                                ? (gameOverData.winner.id === me?.id ? "🏆 ¡Ganaste la partida!" : "💥 ¡Has perdido!") 
+                                : "🤝 ¡Es un empate!"}
+                        </p>
+                        <div className="modal-buttons">
+                            <button 
+                                className="btn-play-again" 
+                                onClick={() => socketService.getSocket().emit('playAgain', { pin })}>
+                                Jugar de Nuevo
+                            </button>
+                            <button 
+                                className="btn-leave" 
+                                onClick={() => {
+                                    socketService.disconnect();
+                                    navigate('/');
+                                }}>
+                                Salir al Inicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

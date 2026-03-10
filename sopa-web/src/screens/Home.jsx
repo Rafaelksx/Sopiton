@@ -6,7 +6,7 @@ import './Home.css'; // Crearemos estilos simples para que se vea como el origin
 export default function Home() {
     const navigate = useNavigate();
    // const [ipAddress, setIpAddress] = useState('127.0.0.1'); // Por defecto localhost para pruebas
-    const [ipAddress, setIpAddress] = useState('https://tu-backend.onrender.com');
+    const [ipAddress, setIpAddress] = useState('https://sopiton.onrender.com');
     const [nickname, setNickname] = useState('');
     const [pinToJoin, setPinToJoin] = useState('');
     const [easyMode, setEasyMode] = useState(false); // Estado para el modo fácil

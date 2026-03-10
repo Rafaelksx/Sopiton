@@ -83,7 +83,6 @@ async def connect(sid, environ):
 @sio.event
 async def createRoom(sid, data):
     nickname = data.get('nickname', 'Host')
-    easy_mode = data.get('easy_mode', False) # Recibe la preferencia de dificultad
     pin = generate_pin()
     
     game_data = generate_board(easy_mode=easy_mode)
@@ -92,6 +91,7 @@ async def createRoom(sid, data):
         "pin": pin,
         "board": game_data["board"],
         "wordsToFind": game_data["wordsToFind"],
+        "easy_mode": data.get('easy_mode', False), # Recibe la preferencia de dificultad
         "foundWords": [],
         "players": [
             {"id": sid, "name": nickname, "score": 0, "role": "host"}
@@ -228,9 +228,35 @@ async def endGame(pin):
     }, room=pin)
 
     # Limpiar sala después de 10 segundos
-    await asyncio.sleep(10)
-    if pin in rooms:
-        del rooms[pin]
+
+@sio.event
+async def playAgain(sid, data):
+    pin = data.get('pin')
+    room = rooms.get(pin)
+
+    if room and room['status'] == 'finished':
+        # Generar nuevo tablero respetando la dificultad original
+        game_data = generate_board(easy_mode=room.get('easy_mode', False))
+
+        room['board'] = game_data['board']
+        room['wordsToFind'] = game_data['wordsToFind']
+        room['foundWords'] = []
+        room['turnIndex'] = 0
+        room['timeLeft'] = 30
+        room['status'] = 'playing'
+
+        for p in room['players']:
+            p['score'] = 0
+
+        # Avisar a ambos que el juego se reinició
+        await sio.emit('gameRestarted', {
+            "players": room['players'],
+            "board": room['board'],
+            "wordsToFind": room['wordsToFind'],
+            "turnIndex": room['turnIndex']
+        }, room=pin)
+
+        room['task'] = asyncio.create_task(turn_timer(pin))
         
 @sio.event
 async def disconnect(sid):
