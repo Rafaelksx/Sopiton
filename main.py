@@ -99,10 +99,12 @@ async def createRoom(sid, data):
         "turnIndex": 0,
         "timeLeft": 30,
         "status": "waiting",
-        "task": None # Para guardar la tarea asíncrona del temporizador
+        "task": None 
     }
     
-    sio.enter_room(sid, pin)
+    # ¡AQUÍ FALTABA EL AWAIT! Esto mete al creador en la sala
+    await sio.enter_room(sid, pin)
+    
     await sio.emit('roomCreated', {'pin': pin}, room=sid)
     print(f"Sala creada: {pin} por {nickname} (Modo Fácil: {easy_mode})")
 
@@ -114,9 +116,13 @@ async def joinRoom(sid, data):
     room = rooms.get(pin)
     if room and len(room['players']) < 2 and room['status'] == 'waiting':
         room['players'].append({"id": sid, "name": nickname, "score": 0, "role": "guest"})
-        sio.enter_room(sid, pin)
+        
+        # ¡AQUÍ TAMBIÉN FALTABA EL AWAIT! Esto mete al invitado en la sala
+        await sio.enter_room(sid, pin)
         
         room['status'] = 'playing'
+        
+        # Como ahora ambos están en la sala, este mensaje sí les llegará a los dos
         await sio.emit('gameStarted', {
             "players": room['players'],
             "board": room['board'],
@@ -124,12 +130,11 @@ async def joinRoom(sid, data):
             "turnIndex": room['turnIndex']
         }, room=pin)
         
-        # Iniciar temporizador (ejemplo simplificado)
         room['task'] = asyncio.create_task(turn_timer(pin))
         print(f"{nickname} se unió a la sala {pin}")
     else:
         await sio.emit('errorMsg', 'Sala no encontrada o llena.', room=sid)
-
+        
 async def turn_timer(pin):
     """Maneja el tiempo de cada turno de forma asíncrona"""
     room = rooms.get(pin)
