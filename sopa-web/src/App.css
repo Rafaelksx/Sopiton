@@ -1,4 +1,12 @@
 /* src/App.css */
+/* make #root container fully centered as a fallback */
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

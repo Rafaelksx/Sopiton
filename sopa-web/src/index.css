@@ -22,10 +22,12 @@ a:hover {
   color: #535bf2;
 }
 
+/* center the app wrapper both horizontally and vertically */
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  justify-content: center;
+  align-items: center; /* place-items shorthand doesn't affect flex main-axis */
   min-width: 320px;
   min-height: 100vh;
 }
