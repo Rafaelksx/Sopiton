@@ -64,7 +64,7 @@ export default function Home() {
                     <label>IP del Servidor:</label>
                     <input 
                         type="text" 
-                        placeholder="Ej. 127.0.0.1 o tu dominio" 
+                        placeholder="https://sopiton.onrender.com/" 
                         value={ipAddress} 
                         onChange={(e) => setIpAddress(e.target.value)} 
                     />

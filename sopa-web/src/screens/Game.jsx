@@ -7,7 +7,6 @@ export default function Game() {
     const { state } = useLocation();
     const navigate = useNavigate();
     
-    // Si alguien entra directo a la URL sin pasar por el Home, lo regresamos
     if (!state) {
         navigate('/');
         return null;
@@ -18,11 +17,13 @@ export default function Game() {
     const [wordsToFind, setWordsToFind] = useState(gameData.wordsToFind);
     const [players, setPlayers] = useState(gameData.players);
     const [turnIndex, setTurnIndex] = useState(gameData.turnIndex);
-    const [gameOverData, setGameOverData] = useState(null); // Nuevo estado
+
     const [timeLeft, setTimeLeft] = useState(30);
     const [selection, setSelection] = useState({ start: null, end: null });
     const [foundWords, setFoundWords] = useState(gameData.foundWords || []);
     const [foundLines, setFoundLines] = useState([]);
+    
+    const [gameOverData, setGameOverData] = useState(null); // Estado para el modal
 
     const me = players.find(p => p.name === nickname);
     const isMyTurn = players[turnIndex]?.name === nickname;
@@ -44,17 +45,15 @@ export default function Game() {
         socket.on('wordFound', ({ word, startCoords, endCoords, players: updatedPlayers, foundWords: newFoundWords }) => {
             setPlayers(updatedPlayers);
             setFoundWords(newFoundWords);
-            // Colores diferentes para cada jugador en la web (Morado y Cian)
             const playerColor = newFoundWords.find(fw => fw.word === word)?.byPlayerId === me?.id ? '#8b5cf6' : '#0ea5e9';
             setFoundLines(prev => [...prev, { startCoords, endCoords, color: playerColor }]);
         });
 
         socket.on('gameOver', ({ winner, players }) => {
             setPlayers(players);
-            setGameOverData({ winner });
+            setGameOverData({ winner }); // Muestra el modal en lugar de la alerta
         });
 
-        // Escuchar cuando el otro jugador pulsa "Jugar de nuevo"
         socket.on('gameRestarted', (newGameData) => {
             setBoard(newGameData.board);
             setWordsToFind(newGameData.wordsToFind);
@@ -64,7 +63,7 @@ export default function Game() {
             setFoundLines([]);
             setSelection({ start: null, end: null });
             setTimeLeft(30);
-            setGameOverData(null); // Cierra el modal
+            setGameOverData(null); // Oculta el modal y reinicia
         });
 
         socket.on('playerDisconnected', (msg) => {
@@ -77,12 +76,13 @@ export default function Game() {
             socket.off('turnChanged');
             socket.off('wordFound');
             socket.off('gameOver');
+            socket.off('gameRestarted');
             socket.off('playerDisconnected');
         };
     }, [navigate, me?.id]);
 
     const handleCellClick = (r, c) => {
-        if (!isMyTurn) return;
+        if (!isMyTurn || gameOverData) return; // No dejar hacer clic si terminó el juego
 
         if (!selection.start) {
             setSelection({ start: { r, c }, end: null });
@@ -108,7 +108,6 @@ export default function Game() {
                 const socket = socketService.getSocket();
                 socket.emit('submitWord', { pin, startCoords: selection.start, endCoords: end, selectedWord });
             } else {
-                // Si la selección no es recta, reiniciamos en vez de mostrar un alert molesto
                 setSelection({ start: { r, c }, end: null });
                 return; 
             }
@@ -118,7 +117,6 @@ export default function Game() {
     };
 
     const getCellColor = (r, c) => {
-        // 1. Verificar si es parte de una palabra ya encontrada
         for (let line of foundLines) {
             const { startCoords, endCoords, color } = line;
             const dr = endCoords.r - startCoords.r;
@@ -128,22 +126,16 @@ export default function Game() {
             let stepC = dc === 0 ? 0 : dc / steps;
 
             for (let i = 0; i <= steps; i++) {
-                if (startCoords.r + i * stepR === r && startCoords.c + i * stepC === c) {
-                    return color;
-                }
+                if (startCoords.r + i * stepR === r && startCoords.c + i * stepC === c) return color;
             }
         }
-        // 2. Verificar si es la celda inicial seleccionada actualmente
-        if (selection.start && selection.start.r === r && selection.start.c === c) {
-            return '#f59e0b'; // Naranja/Amarillo oscuro
-        }
+        if (selection.start && selection.start.r === r && selection.start.c === c) return '#f59e0b';
         return 'transparent';
     };
 
     return (
         <div className="game-container">
             <div className="game-layout">
-                {/* Panel Izquierdo: Tablero */}
                 <div className="board-section">
                     <div className="board-header">
                         <h2>Sala: <span>{pin}</span></h2>
@@ -180,7 +172,6 @@ export default function Game() {
                     </div>
                 </div>
 
-                {/* Panel Derecho: Jugadores y Palabras */}
                 <div className="sidebar-section">
                     <div className="players-card">
                         {players.map((p, idx) => (
@@ -200,15 +191,14 @@ export default function Game() {
                             {wordsToFind.map(word => {
                                 const isFound = foundWords.some(fw => fw.word === word);
                                 return (
-                                    <span key={word} className={`word-pill ${isFound ? 'found' : ''}`}>
-                                        {word}
-                                    </span>
+                                    <span key={word} className={`word-pill ${isFound ? 'found' : ''}`}>{word}</span>
                                 );
                             })}
                         </div>
                     </div>
                 </div>
             </div>
+
             {/* MODAL DE FIN DE JUEGO */}
             {gameOverData && (
                 <div className="modal-overlay">
